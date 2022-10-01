@@ -1,4 +1,3 @@
-//app.js api
 import React, { Suspense, lazy } from "react";
 import "./styled/App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
