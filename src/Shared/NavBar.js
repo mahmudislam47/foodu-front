@@ -42,7 +42,7 @@ const NavBar = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const { cart } = useSelector((state) => state);
-
+  
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 50) {
@@ -59,7 +59,7 @@ const NavBar = () => {
     if (user?.role === "user") {
       navigate("/user/dashboard");
     }
-    if (user?.role === "admin") {
+    if (user?.role === "admin"){
       navigate("/admin/dashboard");
     }
   };

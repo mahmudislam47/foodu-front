@@ -19,44 +19,43 @@ const AllOrderTable = ({ order }) => {
   };
   return (
     <>
-      <tr className="bg-white border-b">
+      <tr className="bg-white dark:bg-darkCard border-b dark:border-b-darkCard">
         <td
           scope="row"
-          className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+          className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap"
         >
           {order.personalDetails.email}
         </td>
         <td
           scope="row"
-          className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+          className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap"
         >
           {new Date(order.createdAt).toLocaleDateString()}
         </td>
-        <td className="px-6 py-4">
+        <td className="px-6 py-4 ">
           {order.shippingCostAndMethod.shippingMethod === "Cash on Delivery"
-            ? "COD"
-            : "Card"}
+            ? "COD" : order.shippingCostAndMethod.shippingMethod === "SSL Commerze" ?
+              "SSL" : "Card"}
         </td>
         <td className="px-6 py-4">${order.paymentDetails.totalCost}</td>
         <td
-          className={`${
-            order?.orderStatus === "Pending"
+          className={`${order?.orderStatus === "Pending"
               ? "text-yellow-500"
               : order?.orderStatus === "Processing"
-              ? "text-blue-500"
-              : order?.orderStatus === "Delivered"
-              ? "text-green-500"
-              : order?.orderStatus === "Cencel"
-              ? "text-red-500"
-              : null
-          } px-6 py-4`}
+                ? "text-blue-500"
+                : order?.orderStatus === "Delivered"
+                  ? "text-green-500"
+                  : order?.orderStatus === "Cencel"
+                    ? "text-red-500"
+                    : null
+            } px-6 py-4`}
         >
           {order?.orderStatus}
         </td>
         <td className="px-6 py-4">
           <select
             name="status"
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-lg rounded-lg focus:ring-primary focus:border-primary block lg:w-full w-[150px] p-2.5 outline-none"
+            className="bg-gray-50 border border-gray-300 dark:bg-[#130f40] dark:text-white text-gray-900 text-lg rounded-lg focus:ring-primary focus:border-primary block lg:w-full w-[150px] p-2.5 outline-none"
             onChange={handleChange}
           >
             <option selected={order.orderStatus === "Pending"} value="Pending">

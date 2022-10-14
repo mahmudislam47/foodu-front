@@ -12,14 +12,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { toast } from "react-toastify";
 import { removeAllProduct } from "../../../store/reducers/cartSlice";
-import { useCreateOrderMutation, useSaveOrderInfoMutation } from "../../../store/services/userServices";
+import { useCreateOrderBySSLMutation, useCreateOrderMutation, useSaveOrderInfoMutation } from "../../../store/services/userServices";
 const CheckoutForm = ({ totalCost, shippingCost, setShippingCost }) => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+  const { cart } = useSelector((state) => state);
   const { user } = useSelector((state) => state.auth);
   const [shippingDetails, setshippingDetails] = useState({});
   const [processing, setProcessing] = useState(false);
   const [createOrder] = useCreateOrderMutation();
   const [sendOrderInfo] = useSaveOrderInfoMutation();
+  const [sendOrderBySSL] = useCreateOrderBySSLMutation();
   const [clientSecret, setClientSecret] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -41,74 +43,22 @@ const CheckoutForm = ({ totalCost, shippingCost, setShippingCost }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     let checkOutInfo;
-    if (selectedPaymentMethod === "Cash on Delivery") {
-      setProcessing(true);
-      checkOutInfo = {
-        ...shippingDetails,
-        selectedPaymentMethod,
-        shippingCost,
-        totalCost,
-      };
-      await sendOrderInfo({ checkOutInfo });
-      toast.success("Your Order is successfull", {
+    if(cart?.cartItems?.length === 0){
+      toast.warning("Sorry, Your Cart is empty. Please product add your cart.", {
         theme: "colored",
         closeOnClick: true,
         hideProgressBar: false,
       });
-      setProcessing(false);
-      dispatch(removeAllProduct());
-      navigate("/confirmOrder");
-    } else {
-      checkOutInfo = {
-        ...shippingDetails,
-        selectedPaymentMethod,
-        shippingCost,
-        totalCost,
-      };
-      if (!stripe || !elements) {
-        return;
-      }
-      const card = elements.getElement(CardElement);
-      if (card === null) {
-        return;
-      }
-      setProcessing(true);
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: "card",
-        card,
-      });
-      if (error) {
-        toast.error(error.message, {
-          theme: "colored",
-          closeOnClick: true,
-          hideProgressBar: false,
-        });
-        setProcessing(false);
-      }
-      const { paymentIntent, error: intentError } =
-        await stripe.confirmCardPayment(clientSecret, {
-          payment_method: {
-            card,
-            billing_details: {
-              name: user.fullname,
-              email: user.email,
-            },
-          },
-        });
-      if (intentError) {
-        toast.error(intentError.message, {
-          theme: "colored",
-          closeOnClick: true,
-          hideProgressBar: false,
-        });
-        setProcessing(false);
-      } else {
-        sendOrderInfo({
-          checkOutInfo,
-          transaction: paymentIntent.client_secret,
-          last4: paymentMethod.card.last4,
-        });
-
+    }else{
+      if (selectedPaymentMethod === "Cash on Delivery") {
+        setProcessing(true);
+        checkOutInfo = {
+          ...shippingDetails,
+          selectedPaymentMethod,
+          shippingCost,
+          totalCost,
+        };
+        await sendOrderInfo({ checkOutInfo });
         toast.success("Your Order is successfull", {
           theme: "colored",
           closeOnClick: true,
@@ -117,7 +67,87 @@ const CheckoutForm = ({ totalCost, shippingCost, setShippingCost }) => {
         setProcessing(false);
         dispatch(removeAllProduct());
         navigate("/confirmOrder");
-      }
+      } else if (selectedPaymentMethod === "Credit Card") {
+        checkOutInfo = {
+          ...shippingDetails,
+          selectedPaymentMethod,
+          shippingCost,
+          totalCost,
+        };
+        if (!stripe || !elements) {
+          return;
+        }
+        const card = elements.getElement(CardElement);
+        if (card === null) {
+          return;
+        }
+        setProcessing(true);
+        const { error, paymentMethod } = await stripe.createPaymentMethod({
+          type: "card",
+          card,
+        });
+        if (error) {
+          toast.error(error.message, {
+            theme: "colored",
+            closeOnClick: true,
+            hideProgressBar: false,
+          });
+          setProcessing(false);
+        }
+        const { paymentIntent, error: intentError } =
+          await stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+              card,
+              billing_details: {
+                name: user.fullname,
+                email: user.email,
+              },
+            },
+          });
+        if (intentError) {
+          toast.error(intentError.message, {
+            theme: "colored",
+            closeOnClick: true,
+            hideProgressBar: false,
+          });
+          setProcessing(false);
+        } else {
+          sendOrderInfo({
+            checkOutInfo,
+            transaction: paymentIntent.client_secret,
+            last4: paymentMethod.card.last4,
+          });
+  
+          toast.success("Your Order is successfull", {
+            theme: "colored",
+            closeOnClick: true,
+            hideProgressBar: false,
+          });
+          setProcessing(false);
+          dispatch(removeAllProduct());
+          navigate("/confirmOrder");
+        }
+      } 
+      // else if (selectedPaymentMethod === "SSL Commerze") {
+      //   checkOutInfo = {
+      //     ...shippingDetails,
+      //     selectedPaymentMethod,
+      //     shippingCost,
+      //     totalCost,
+      //   };
+      //   sendOrderInfo({
+      //     checkOutInfo
+      //   }).then(res => console.log(res))
+      //   await sendOrderBySSL({ checkOutInfo }).then(res => {
+      //     window.location.replace(res.data)
+      //   })
+      // } else {
+      //   toast.warning("Currently Bkash payment is not available.", {
+      //     theme: "colored",
+      //     closeOnClick: true,
+      //     hideProgressBar: false,
+      //   });
+      // }
     }
   };
   return (
@@ -167,9 +197,11 @@ const CheckoutForm = ({ totalCost, shippingCost, setShippingCost }) => {
         <h2 className="text-xl text-black mb-3">03. Shipping Cost</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
           {shippinCost.map((item, index) => (
-            <div
+            <label
+              htmlFor={item.id}
+              id={item.id}
               key={index}
-              className="mb-3 border-2 border-gray-200 bg-light-gray rounded-md p-3 flex items-center justify-between"
+              className="mb-3 border-2 border-gray-200 bg-light-gray rounded-md p-3 flex items-center justify-between cursor-pointer"
             >
               <div className="flex items-center ">
                 <span className="text-5xl color-gray-300 mr-3">
@@ -190,9 +222,10 @@ const CheckoutForm = ({ totalCost, shippingCost, setShippingCost }) => {
                 type={item.type}
                 placeholder={item.placeholder}
                 value={item.cost}
+                id={item.id}
                 required
               />
-            </div>
+            </label>
           ))}
         </div>
         {/* payment method */}
@@ -220,11 +253,13 @@ const CheckoutForm = ({ totalCost, shippingCost, setShippingCost }) => {
           {paymentInfo.map((item, index) => (
             <div className="col-span-2 lg:col-span-1">
               {/* select method */}
-              <div
+              <label
+                htmlFor={item.id}
+                id={item.id}
                 key={index}
-                className="mb-3 border-2 border-gray-200 bg-light-gray rounded-md p-3 flex items-center justify-between"
+                className="mb-3 border-2 border-gray-200 bg-light-gray rounded-md p-3 flex items-center justify-between cursor-pointer"
               >
-                <div className="flex items-center">
+                <div className="flex items-center cursor-pointer">
                   <span className="text-4xl color-gray-300 mr-3">
                     {item.icon}
                   </span>
@@ -234,13 +269,14 @@ const CheckoutForm = ({ totalCost, shippingCost, setShippingCost }) => {
                 </div>
                 <input
                   onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                  className=" bg-light-gray w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 "
+                  className=" bg-light-gray w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 cursor-pointer"
                   name={item.name}
                   type={item.type}
                   value={item.text}
                   required
+                  id={item.id}
                 />
-              </div>
+              </label>
             </div>
           ))}
         </div>
@@ -262,7 +298,7 @@ const CheckoutForm = ({ totalCost, shippingCost, setShippingCost }) => {
           ) : (
             <button
               type="submit"
-              className="bg-primary text-black py-2 px-4 flex items-center justify-center rounded-md hover:bg-primary_hover hover:text-white"
+              className={`bg-primary text-black py-2 px-4 flex items-center justify-center rounded-md hover:bg-primary_hover hover:text-white ${!stripe && "cursor-not-allowed"}`}
               disabled={!stripe}
             >
               Confirm Order

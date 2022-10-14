@@ -1,6 +1,8 @@
 import { GiScooter } from "react-icons/gi";
 import { BsCashCoin } from "react-icons/bs";
+import { FaMoneyBillAlt } from "react-icons/fa";
 import { ImCreditCard } from "react-icons/im";
+import { MdPayments } from "react-icons/md";
 
 const personalInfo = [
   {
@@ -78,6 +80,20 @@ const paymentInfo = [
     type: "radio",
     text: `Credit Card`,
   },
+  // {
+  //   icon: <FaMoneyBillAlt />,
+  //   card: true,
+  //   name: "payment_method",
+  //   type: "radio",
+  //   text: `Bkash`,
+  // },
+  // {
+  //   icon: <MdPayments />,
+  //   card: true,
+  //   name: "payment_method",
+  //   type: "radio",
+  //   text: `SSL Commerze`,
+  // },
 ];
 
 export { personalInfo, shippingInfo, shippinCost, paymentInfo };

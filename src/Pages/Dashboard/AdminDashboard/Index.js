@@ -18,10 +18,16 @@ import TableLoader from "../../../Shared/Loader/TableLoader";
 import ProductLoader from "../../../Shared/Loader/ProductLoader";
 import { useAllOrderQuery } from "../../../store/services/userServices";
 import NotFound from "../../../Shared/DataNotFound";
+import { useSelector } from "react-redux";
 const Index = () => {
-  const { data: userData } = useAllUsersQuery();
+  const { data: userData, isLoading } = useAllUsersQuery();
+  const { user: { email } } = useSelector(state => state.auth);
+  let allUser;
+  if (!isLoading) {
+    allUser = userData?.allUser?.filter(user => user.email !== email)
+  }
   const { data: categories } = useAllCategoryQuery();
-  const { data: allProducts, isLoading } = useAllProductQuery();
+  const { data: allProducts, isLoading: productLoading } = useAllProductQuery();
   const { data: allOrders } = useAllOrderQuery();
   const { data: allReviews } = useAllReviewQuery();
   const { data } = useAllUsersQuery();
@@ -74,7 +80,7 @@ const Index = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 mt-4">
         {sidebarMenu.map((item, index) => (
           <div
-            className="p-4 flex items-center bg-white border border-border rounded-md shadow-md"
+            className="p-4 flex items-center bg-white dark:bg-darkCard border border-border dark:border-[#30336b] rounded-md shadow-md"
             key={index}
           >
             <div
@@ -83,10 +89,10 @@ const Index = () => {
               {item.icon}
             </div>
             <div>
-              <p className="text-xl font-medium  text-gray-600 ">
+              <p className="text-xl font-medium  text-gray-600 dark:text-white ">
                 {item.title}
               </p>
-              <p className="text-xl font-semibold text-gray-700">
+              <p className="text-xl font-semibold text-gray-700 dark:text-white">
                 {item.numbers}
               </p>
             </div>
@@ -94,7 +100,7 @@ const Index = () => {
         ))}
       </div>
       <h2 className="text-3xl font-bold mb-4">Dashboard Summary</h2>
-      {isLoading ? (
+      {productLoading ? (
         <ProductLoader />
       ) : (
         <>
@@ -116,7 +122,7 @@ const Index = () => {
           <h2 className="text-xl font-bold my-4">Some Users</h2>
           <div className="relative overflow-x-auto shadow-md sm:rounded-lg mb-16">
             <table className="w-full text-left text-gray-500 whitespace-nowrap">
-              <thead className="text-[16px] text-gray-700 uppercase bg-gray-50">
+              <thead className="text-[16px] text-gray-700 uppercase bg-gray-50 dark:bg-darkTableHead dark:text-white">
                 <tr>
                   <th scope="col" className="px-6 py-3">
                     Full Name
@@ -139,7 +145,7 @@ const Index = () => {
                 </tr>
               </thead>
               <tbody className="text-[16px]">
-                {data?.allUser
+                {allUser
                   .slice(0, 5)
                   .map((user) => <AllUserTable key={user._id} user={user} />)
                   .reverse()}
@@ -156,8 +162,8 @@ const Index = () => {
         <>
           <h2 className="text-xl font-bold my-4">Some Orders</h2>
           <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-            <table className="w-full text-left text-gray-500 whitespace-nowrap">
-              <thead className="text-[16px] text-gray-700 uppercase bg-gray-50">
+            <table className="w-full text-left text-gray-500 dark:text-white whitespace-nowrap">
+              <thead className="text-[16px] text-gray-700 uppercase bg-gray-50 dark:bg-darkTableHead dark:text-white">
                 <tr>
                   <th scope="col" className="px-6 py-3">
                     Email

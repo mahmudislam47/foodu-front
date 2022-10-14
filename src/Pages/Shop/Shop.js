@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import ScreenHeader from "../../Shared/ScreenHeader";
 import Product from "../../Shared/Product";
 import { Link } from "react-router-dom";
@@ -48,7 +48,6 @@ const Shop = () => {
     }
     return sortedProduct;
   };
-  console.log(category)
   return (
     <>
       <NavBar />
@@ -114,7 +113,7 @@ const Shop = () => {
             {/* product part */}
             {isLoading ? (
               <MenuLoader />
-            ) : !productSortByPriceAndCategory().length ? (
+            ) : !productSortByPriceAndCategory()?.length ? (
               <NotFound>
                 No products were found matching your selection.
               </NotFound>

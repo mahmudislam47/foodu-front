@@ -9,7 +9,6 @@ const SingleProduct = ({ product }) => {
   const navigate = useNavigate();
   let url = window.location.href;
   const filename = url.split("/").pop().split("#")[0].split("?")[0];
-  console.log(filename)
   const [showModal, setShowModal] = React.useState(false);
   const [sendProductId] = useDeleteProductMutation();
   const handleNavigate = (id) => {
@@ -34,7 +33,7 @@ const SingleProduct = ({ product }) => {
   return (
     <>
       <div className="w-full">
-        <div className="product border-2 border-gray-200 bg-white rounded-2xl p-2 relative group font-JosefinSans">
+        <div className="product border-2 border-gray-200 dark:border-darkCard bg-white dark:bg-darkCard rounded-2xl p-2 relative group font-JosefinSans">
           {/* image */}
           <div
             className="product-image basis-2/6 overflow-hidden"
@@ -65,12 +64,12 @@ const SingleProduct = ({ product }) => {
           {/* product content */}
           <div className="content text-left p-4 pt-5 basis-4/6">
             <div
-              className="text-2xl font-bold text-heading hover:text-primary_hover cursor-pointer"
+              className="text-2xl font-bold text-heading dark:text-white hover:text-primary_hover cursor-pointer"
               onClick={() => handleViewProduct(product._id)}
             >
               {product.title}
             </div>
-            <div className="mt-2 flex items-center">
+            <div className="mt-2 flex items-center dark:text-white">
               <span className="text-lg font-bold">Category:</span>&nbsp;
               <span className="font-semibold text-lg">{product.category}</span>
             </div>
